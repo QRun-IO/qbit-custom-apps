@@ -97,7 +97,7 @@
       <dependency>
          <groupId>com.kingsrook.qqq</groupId>
          <artifactId>qqq-frontend-material-dashboard</artifactId>
-         <version>0.40.0-custom-apps-qbit-5d3e17bb-SNAPSHOT</version>
+         <version>0.40.0-custom-apps-qbit-14da225-SNAPSHOT</version>
       </dependency>
 
       <dependency>
