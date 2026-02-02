@@ -24,6 +24,10 @@
 
    <properties>
       <revision>0.1.0-SNAPSHOT</revision>
+      <maven.compiler.source>21</maven.compiler.source>
+      <maven.compiler.target>21</maven.compiler.target>
+      <maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
+      <maven.compiler.showWarnings>true</maven.compiler.showWarnings>
    </properties>
 
    <parent>
