@@ -89,6 +89,11 @@
          <version>0.40.0-custom-apps-qbit-5d3e17bb-SNAPSHOT</version>
       </dependency>
       <dependency>
+         <groupId>com.kingsrook.qbits</groupId>
+         <artifactId>qbit-user-role-permissions</artifactId>
+         <version>0.31.0</version>
+      </dependency>
+      <dependency>
          <groupId>com.kingsrook.qqq</groupId>
          <artifactId>qqq-middleware-api</artifactId>
          <optional>true</optional>

@@ -39,8 +39,10 @@ import com.kingsrook.qbits.customapps.model.CustomAppBackendEnum;
 import com.kingsrook.qbits.customapps.model.CustomAppContainer;
 import com.kingsrook.qbits.customapps.model.CustomAppIcon;
 import com.kingsrook.qbits.customapps.model.CustomAppSection;
+import com.kingsrook.qbits.customapps.utils.CustomAppsUtils;
 import com.kingsrook.qbits.customapps.widgets.LookerWidgetRenderer;
 import com.kingsrook.qqq.backend.core.actions.tables.QueryAction;
+import com.kingsrook.qqq.backend.core.context.QContext;
 import com.kingsrook.qqq.backend.core.exceptions.QException;
 import com.kingsrook.qqq.backend.core.instances.QMetaDataVariableInterpreter;
 import com.kingsrook.qqq.backend.core.logging.QLogger;
@@ -55,6 +57,8 @@ import com.kingsrook.qqq.backend.core.model.metadata.dashboard.QWidgetMetaDataIn
 import com.kingsrook.qqq.backend.core.model.metadata.layout.QAppMetaData;
 import com.kingsrook.qqq.backend.core.model.metadata.layout.QAppSection;
 import com.kingsrook.qqq.backend.core.model.metadata.layout.QIcon;
+import com.kingsrook.qqq.backend.core.model.metadata.permissions.DenyBehavior;
+import com.kingsrook.qqq.backend.core.model.metadata.permissions.PermissionLevel;
 import com.kingsrook.qqq.backend.core.model.metadata.qbits.QBitMetaData;
 import com.kingsrook.qqq.backend.core.model.metadata.qbits.QBitMetaDataProducer;
 import com.kingsrook.qqq.backend.core.utils.ListingHash;
@@ -121,7 +125,7 @@ public class CustomAppsQBitProducer implements QBitMetaDataProducer<CustomAppsQB
    /***************************************************************************
     *
     ***************************************************************************/
-   public List<QAppMetaData> getCustomAppList(QInstance qInstance) throws QException
+   public CustomAppData getCustomAppList(QInstance qInstance) throws QException
    {
       ///////////////////////////////////////////////////
       // look up data needed to set up the custom apps //
@@ -153,18 +157,37 @@ public class CustomAppsQBitProducer implements QBitMetaDataProducer<CustomAppsQB
       ///////////////////////////////////
       // iterate over containers first //
       ///////////////////////////////////
-      List<QAppMetaData> containers = new ArrayList<>();
+      List<QAppMetaData>                    containers = new ArrayList<>();
+      Map<String, QAppMetaData>             appMap     = new HashMap<>();
+      Map<String, QWidgetMetaDataInterface> widgetMap  = new HashMap<>();
       for(CustomAppContainer container : customAppContainerList)
       {
+         //////////////////////////
+         // if no sections, skip //
+         //////////////////////////
+         if(sectionsMap.get(container.getId()) == null)
+         {
+            continue;
+         }
+
          ////////////////////////////////////////
          // iterate over sections for this app //
          ////////////////////////////////////////
          List<QAppSection> sections = new ArrayList<>();
          for(CustomAppSection section : sectionsMap.get(container.getId()))
          {
+            //////////////////////
+            // if no apps, skip //
+            //////////////////////
+            if(appsMap.get(section.getId()) == null)
+            {
+               continue;
+            }
+
             ///////////////////////
             // iterate over apps //
             ///////////////////////
+            int          appCount    = 0;
             List<String> appNameList = new ArrayList<>();
             if(appsMap.containsKey(section.getId()))
             {
@@ -173,8 +196,15 @@ public class CustomAppsQBitProducer implements QBitMetaDataProducer<CustomAppsQB
                   //////////////////////////////////////////////////
                   // turn the label into a valid name for the app //
                   //////////////////////////////////////////////////
-                  String appName = nameToCamelCase(app.getName());
-                  appName = "qca" + StringUtils.ucFirst(appName);
+                  String appName = CustomAppsUtils.getAppName(app.getName(), CustomApp.TABLE_NAME);
+
+                  /////////////////////////////////////////////////////
+                  // make sure user has permission to this app //
+                  ////////////////////////////////////////////////////
+                  if(!QContext.getQSession().hasPermission(appName + ".hasAccess"))
+                  {
+                     continue;
+                  }
 
                   /////////////////////////////////////////
                   // create a custom widget for this app //
@@ -184,27 +214,35 @@ public class CustomAppsQBitProducer implements QBitMetaDataProducer<CustomAppsQB
                   CustomAppIcon            appIcon    = customAppIconMap.get(app.getCustomAppIconId());
 
                   QAppMetaData appMetaData = new QAppMetaData()
+                     .withPermissionRules(qInstance.getDefaultPermissionRules().withLevel(PermissionLevel.HAS_ACCESS_PERMISSION).withPermissionBaseName(appName).withDenyBehavior(DenyBehavior.HIDDEN))
                      .withIcon(new QIcon(appIcon.getIconId()))
                      .withName(appName)
                      .withLabel(app.getName())
                      .withWidgets(List.of(widget.getName()));
                   appNameList.add(appMetaData.getName());
+                  appCount++;
 
-                  /////////////////////////////////////
-                  // add to qinstance if not already //
-                  /////////////////////////////////////
-                  if(!qInstance.getApps().containsKey(appMetaData.getName()))
-                  {
-                     qInstance.getApps().put(appMetaData.getName(), appMetaData);
-                  }
+                  ////////////////////////
+                  // add to output data //
+                  ////////////////////////
+                  widgetMap.put(widgetName, widget);
+                  appMap.put(appMetaData.getName(), appMetaData);
                }
+            }
+
+            ///////////////////////////////////////////////////////
+            // if no apps for this section, continue to next one //
+            ///////////////////////////////////////////////////////
+            if(appCount == 0)
+            {
+               continue;
             }
 
             /////////////////////////////////////////////////
             // build section with its apps and add to list //
             /////////////////////////////////////////////////
             String sectionName = nameToCamelCase(section.getName());
-            sectionName = "cas" + StringUtils.ucFirst(sectionName);
+            sectionName = "qcas" + StringUtils.ucFirst(sectionName);
 
             QAppSection appSection = new QAppSection()
                .withApps(appNameList)
@@ -213,29 +251,38 @@ public class CustomAppsQBitProducer implements QBitMetaDataProducer<CustomAppsQB
             sections.add(appSection);
          }
 
-         ///////////////////////
-         // build the new app //
-         ///////////////////////
-         String containerName = nameToCamelCase(container.getName());
-         containerName = "cac" + StringUtils.ucFirst(containerName);
+         /////////////////////////
+         // build the container //
+         /////////////////////////
+         String containerName = CustomAppsUtils.getAppName(container.getName(), CustomAppContainer.TABLE_NAME);
+
+         //////////////////////////
+         // if no sections, skip //
+         //////////////////////////
+         if(sections.isEmpty())
+         {
+            continue;
+         }
+
+         /////////////////////////////////////////////////////
+         // make sure user has permission to this container //
+         /////////////////////////////////////////////////////
+         if(!QContext.getQSession().hasPermission(containerName + ".hasAccess"))
+         {
+            continue;
+         }
+
          CustomAppIcon containerIcon = customAppIconMap.get(container.getCustomAppIconId());
          QAppMetaData containerApp = new QAppMetaData()
+            .withPermissionRules(qInstance.getDefaultPermissionRules().withLevel(PermissionLevel.HAS_ACCESS_PERMISSION).withPermissionBaseName(containerName).withDenyBehavior(DenyBehavior.HIDDEN))
             .withName(containerName)
             .withLabel(container.getName())
             .withIcon(new QIcon().withName(containerIcon.getIconId()))
             .withSections(sections);
          containers.add(containerApp);
-
-         /////////////////////////////////////
-         // add to qinstance if not already //
-         /////////////////////////////////////
-         if(!qInstance.getApps().containsKey(containerApp.getName()))
-         {
-            qInstance.getApps().put(containerApp.getName(), containerApp);
-         }
       }
 
-      return (containers);
+      return (new CustomAppData(containers, appMap, widgetMap));
    }
 
 
@@ -275,7 +322,7 @@ public class CustomAppsQBitProducer implements QBitMetaDataProducer<CustomAppsQB
 
       //////////////////////////////
       // add the dashboard to url //
-      //////////////////////////////
+      /////////////////////////
       Integer dashboardId = customApp.getLookerDashboardId();
       componentSourceUrl += "?dashboardId=" + dashboardId;
 
@@ -296,7 +343,7 @@ public class CustomAppsQBitProducer implements QBitMetaDataProducer<CustomAppsQB
          .withDefaultValues(defaultValues);
       if(qInstance.getWidget(widgetName) == null)
       {
-         qInstance.add(lookerWidget);
+         qInstance.addWidget(lookerWidget);
       }
 
       return (lookerWidget);
@@ -356,4 +403,7 @@ public class CustomAppsQBitProducer implements QBitMetaDataProducer<CustomAppsQB
       return (this);
    }
 
+
+
+   public record CustomAppData(List<QAppMetaData> containerList, Map<String, QAppMetaData> appMap, Map<String, QWidgetMetaDataInterface> widgetMap) {}
 }

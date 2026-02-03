@@ -24,11 +24,15 @@ package com.kingsrook.qbits.customapps.model;
 
 import java.io.Serializable;
 import java.time.Instant;
+import com.kingsrook.qbits.customapps.customizers.CustomAppContainerTableCustomizer;
+import com.kingsrook.qbits.userrolepermissions.model.Permission;
+import com.kingsrook.qqq.backend.core.actions.customizers.TableCustomizers;
 import com.kingsrook.qqq.backend.core.exceptions.QException;
 import com.kingsrook.qqq.backend.core.model.data.QField;
 import com.kingsrook.qqq.backend.core.model.data.QRecord;
 import com.kingsrook.qqq.backend.core.model.data.QRecordEntity;
 import com.kingsrook.qqq.backend.core.model.metadata.QInstance;
+import com.kingsrook.qqq.backend.core.model.metadata.code.QCodeReference;
 import com.kingsrook.qqq.backend.core.model.metadata.fields.ValueTooLongBehavior;
 import com.kingsrook.qqq.backend.core.model.metadata.joins.QJoinMetaData;
 import com.kingsrook.qqq.backend.core.model.metadata.layout.QIcon;
@@ -37,8 +41,10 @@ import com.kingsrook.qqq.backend.core.model.metadata.producers.annotations.Child
 import com.kingsrook.qqq.backend.core.model.metadata.producers.annotations.ChildRecordListWidget;
 import com.kingsrook.qqq.backend.core.model.metadata.producers.annotations.ChildTable;
 import com.kingsrook.qqq.backend.core.model.metadata.producers.annotations.QMetaDataProducingEntity;
+import com.kingsrook.qqq.backend.core.model.metadata.tables.QFieldSection;
 import com.kingsrook.qqq.backend.core.model.metadata.tables.QTableMetaData;
 import com.kingsrook.qqq.backend.core.model.metadata.tables.SectionFactory;
+import com.kingsrook.qqq.backend.core.model.metadata.tables.Tier;
 import com.kingsrook.qqq.backend.core.model.metadata.tables.UniqueKey;
 
 
@@ -84,9 +90,16 @@ public class CustomAppContainer extends QRecordEntity implements Serializable
             .withRecordLabelFormat("%s")
             .withRecordLabelFields("name")
             .withSection(SectionFactory.defaultT1("id"))
-            .withSection(SectionFactory.defaultT2("name", "customAppIconId", "sequenceNo"))
+            .withSection(SectionFactory.defaultT2("name", "customAppIconId", "sequenceNo", "permissionId"))
             .withSection(SectionFactory.customT2("apps", new QIcon("polyline")).withWidgetName(sectionsChildJoinName))
-            .withSection(SectionFactory.defaultT3("createDate", "modifyDate"));
+            .withSection(new QFieldSection("users", new QIcon().withName("person"), Tier.T2).withWidgetName("customAppContainerPermissions"))
+            .withSection(SectionFactory.defaultT3("createDate", "modifyDate"))
+
+            .withCustomizer(TableCustomizers.POST_DELETE_RECORD, new QCodeReference(CustomAppContainerTableCustomizer.class))
+            .withCustomizer(TableCustomizers.PRE_INSERT_RECORD, new QCodeReference(CustomAppContainerTableCustomizer.class))
+            .withCustomizer(TableCustomizers.PRE_UPDATE_RECORD, new QCodeReference(CustomAppContainerTableCustomizer.class));
+
+         // .withExposedJoin(new ExposedJoin().withJoinPath(List.of(CustomAppContainerJoinUserPermissionIntMetaDataProducer.NAME)).withJoinTable(UserPermissionInt.TABLE_NAME));
 
          return (table);
       }
@@ -105,6 +118,9 @@ public class CustomAppContainer extends QRecordEntity implements Serializable
 
    @QField(isRequired = true)
    private Integer sequenceNo;
+
+   @QField(isEditable = false, possibleValueSourceName = Permission.TABLE_NAME)
+   private Integer permissionId;
 
    @QField(isEditable = false)
    private Instant createDate;
@@ -314,6 +330,37 @@ public class CustomAppContainer extends QRecordEntity implements Serializable
    public CustomAppContainer withCustomAppIconId(Integer customAppIconId)
    {
       this.customAppIconId = customAppIconId;
+      return (this);
+   }
+
+
+
+   /*******************************************************************************
+    ** Getter for permissionId
+    *******************************************************************************/
+   public Integer getPermissionId()
+   {
+      return (this.permissionId);
+   }
+
+
+
+   /*******************************************************************************
+    ** Setter for permissionId
+    *******************************************************************************/
+   public void setPermissionId(Integer permissionId)
+   {
+      this.permissionId = permissionId;
+   }
+
+
+
+   /*******************************************************************************
+    ** Fluent setter for permissionId
+    *******************************************************************************/
+   public CustomAppContainer withPermissionId(Integer permissionId)
+   {
+      this.permissionId = permissionId;
       return (this);
    }
 

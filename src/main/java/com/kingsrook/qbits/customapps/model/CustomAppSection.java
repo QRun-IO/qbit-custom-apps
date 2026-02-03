@@ -99,7 +99,7 @@ public class CustomAppSection extends QRecordEntity implements Serializable
    @QField(maxLength = 100, valueTooLongBehavior = ValueTooLongBehavior.ERROR, isRequired = true)
    private String name;
 
-   @QField(isRequired = true, possibleValueSourceName = CustomAppContainer.TABLE_NAME)
+   @QField(label = "Container", isRequired = true, possibleValueSourceName = CustomAppContainer.TABLE_NAME)
    private Integer customAppContainerId;
 
    @QField(isRequired = true)

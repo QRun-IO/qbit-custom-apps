@@ -97,7 +97,7 @@ public class CustomAppBackendConfig extends QRecordEntity implements Serializabl
    @QField(maxLength = 100, valueTooLongBehavior = ValueTooLongBehavior.ERROR, isRequired = true)
    private String name;
 
-   @QField(isRequired = true, possibleValueSourceName = CustomAppBackendPossibleValueMetaDataProducer.NAME)
+   @QField(label = "Backend", isRequired = true, possibleValueSourceName = CustomAppBackendPossibleValueMetaDataProducer.NAME)
    private Integer customAppBackendId;
 
    @QField(isEditable = false)

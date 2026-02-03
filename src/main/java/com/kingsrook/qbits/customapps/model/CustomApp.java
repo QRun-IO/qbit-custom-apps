@@ -24,22 +24,28 @@ package com.kingsrook.qbits.customapps.model;
 
 import java.io.Serializable;
 import java.time.Instant;
+import com.kingsrook.qbits.customapps.customizers.CustomAppTableCustomizer;
+import com.kingsrook.qbits.userrolepermissions.model.Permission;
+import com.kingsrook.qqq.backend.core.actions.customizers.TableCustomizers;
 import com.kingsrook.qqq.backend.core.exceptions.QException;
 import com.kingsrook.qqq.backend.core.model.data.QField;
 import com.kingsrook.qqq.backend.core.model.data.QRecord;
 import com.kingsrook.qqq.backend.core.model.data.QRecordEntity;
 import com.kingsrook.qqq.backend.core.model.metadata.QInstance;
+import com.kingsrook.qqq.backend.core.model.metadata.code.QCodeReference;
 import com.kingsrook.qqq.backend.core.model.metadata.fields.ValueTooLongBehavior;
 import com.kingsrook.qqq.backend.core.model.metadata.layout.QIcon;
 import com.kingsrook.qqq.backend.core.model.metadata.producers.MetaDataCustomizerInterface;
 import com.kingsrook.qqq.backend.core.model.metadata.producers.annotations.QMetaDataProducingEntity;
+import com.kingsrook.qqq.backend.core.model.metadata.tables.QFieldSection;
 import com.kingsrook.qqq.backend.core.model.metadata.tables.QTableMetaData;
 import com.kingsrook.qqq.backend.core.model.metadata.tables.SectionFactory;
+import com.kingsrook.qqq.backend.core.model.metadata.tables.Tier;
 import com.kingsrook.qqq.backend.core.model.metadata.tables.UniqueKey;
 
 
 /*******************************************************************************
- ** QRecord Entity for CustomAppSection table
+ ** QRecord Entity for CustomApp table
  *******************************************************************************/
 @QMetaDataProducingEntity(
    producePossibleValueSource = true,
@@ -57,7 +63,6 @@ public class CustomApp extends QRecordEntity implements Serializable
     ***************************************************************************/
    public static class TableMetaDataCustomizer implements MetaDataCustomizerInterface<QTableMetaData>
    {
-
       /***************************************************************************
        **
        ***************************************************************************/
@@ -71,8 +76,15 @@ public class CustomApp extends QRecordEntity implements Serializable
             .withRecordLabelFormat("%s")
             .withRecordLabelFields("name")
             .withSection(SectionFactory.defaultT1("id"))
-            .withSection(SectionFactory.defaultT2("name", "customAppIconId", "customAppBackendConfigId", "customAppSectionId", "sequenceNo", "lookerDashboardId"))
-            .withSection(SectionFactory.defaultT3("createDate", "modifyDate"));
+            .withSection(SectionFactory.defaultT2("name", "customAppIconId", "customAppBackendConfigId", "customAppSectionId", "sequenceNo", "lookerDashboardId", "permissionId"))
+            .withSection(new QFieldSection("users", new QIcon().withName("person"), Tier.T2).withWidgetName("customAppPermissions"))
+            .withSection(SectionFactory.defaultT3("createDate", "modifyDate"))
+
+            .withCustomizer(TableCustomizers.POST_DELETE_RECORD, new QCodeReference(CustomAppTableCustomizer.class))
+            .withCustomizer(TableCustomizers.PRE_INSERT_RECORD, new QCodeReference(CustomAppTableCustomizer.class))
+            .withCustomizer(TableCustomizers.PRE_UPDATE_RECORD, new QCodeReference(CustomAppTableCustomizer.class));
+
+         // .withExposedJoin(new ExposedJoin().withJoinPath(List.of(CustomAppJoinUserPermissionIntMetaDataProducer.NAME)).withJoinTable(UserPermissionInt.TABLE_NAME));
 
          return (table);
       }
@@ -86,17 +98,20 @@ public class CustomApp extends QRecordEntity implements Serializable
    @QField(maxLength = 100, valueTooLongBehavior = ValueTooLongBehavior.ERROR, isRequired = true)
    private String name;
 
-   @QField(isRequired = true, possibleValueSourceName = CustomAppBackendConfig.TABLE_NAME)
+   @QField(label = "Backend Config", isRequired = true, possibleValueSourceName = CustomAppBackendConfig.TABLE_NAME)
    private Integer customAppBackendConfigId;
 
-   @QField(isRequired = true, possibleValueSourceName = CustomAppSection.TABLE_NAME)
+   @QField(label = "Section", isRequired = true, possibleValueSourceName = CustomAppSection.TABLE_NAME)
    private Integer customAppSectionId;
 
-   @QField(isRequired = true, possibleValueSourceName = CustomAppIcon.TABLE_NAME)
+   @QField(label = "Icon", isRequired = true, possibleValueSourceName = CustomAppIcon.TABLE_NAME)
    private Integer customAppIconId;
 
    @QField(isRequired = true)
    private Integer sequenceNo;
+
+   @QField(isEditable = false, possibleValueSourceName = Permission.TABLE_NAME)
+   private Integer permissionId;
 
    @QField(isRequired = true)
    private Integer lookerDashboardId;
@@ -402,6 +417,37 @@ public class CustomApp extends QRecordEntity implements Serializable
    public CustomApp withLookerDashboardId(Integer lookerDashboardId)
    {
       this.lookerDashboardId = lookerDashboardId;
+      return (this);
+   }
+
+
+
+   /*******************************************************************************
+    ** Getter for permissionId
+    *******************************************************************************/
+   public Integer getPermissionId()
+   {
+      return (this.permissionId);
+   }
+
+
+
+   /*******************************************************************************
+    ** Setter for permissionId
+    *******************************************************************************/
+   public void setPermissionId(Integer permissionId)
+   {
+      this.permissionId = permissionId;
+   }
+
+
+
+   /*******************************************************************************
+    ** Fluent setter for permissionId
+    *******************************************************************************/
+   public CustomApp withPermissionId(Integer permissionId)
+   {
+      this.permissionId = permissionId;
       return (this);
    }
 

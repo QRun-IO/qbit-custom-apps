@@ -27,8 +27,15 @@ public class LookerWidgetRenderer extends AbstractWidgetRenderer
    {
       try
       {
-         Map<String, String> queryParams = input.getQueryParams();
-         Integer             dashboardId = Integer.parseInt(queryParams.get("dashboardId"));
+         Map<String, String> queryParams   = input.getQueryParams();
+         Integer             dashboardSlug = queryParams.containsKey("dashboardSlug") ? Integer.parseInt(queryParams.get("dashboardSlug")) : null;
+
+         int dashboardId = -1;
+         if(queryParams.containsKey("dashboardId") && queryParams.get("dashboardId") != null)
+         {
+            dashboardId = Integer.parseInt(queryParams.get("dashboardId"));
+
+         }
          return (new RenderWidgetOutput(new LookerWidgetData().withDashboardId(dashboardId)));
       }
       catch(Exception e)
