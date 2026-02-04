@@ -86,7 +86,7 @@
       <dependency>
          <groupId>com.kingsrook.qqq</groupId>
          <artifactId>qqq-backend-core</artifactId>
-         <version>0.40.0-custom-apps-qbit-5d3e17bb-SNAPSHOT</version>
+         <version>0.40.0-custom-apps-qbit-4f4d85ef-20260204.160813-1</version>
       </dependency>
       <dependency>
          <groupId>com.kingsrook.qbits</groupId>
@@ -106,7 +106,7 @@
       <dependency>
          <groupId>com.kingsrook.qqq</groupId>
          <artifactId>qqq-frontend-material-dashboard</artifactId>
-         <version>0.40.0-custom-apps-qbit-14da225-SNAPSHOT</version>
+         <version>0.40.0-custom-apps-qbit-f7a2afa-20260204.161342-1</version>
       </dependency>
 
       <dependency>
