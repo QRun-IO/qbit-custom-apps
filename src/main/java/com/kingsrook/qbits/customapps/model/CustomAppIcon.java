@@ -24,15 +24,22 @@ package com.kingsrook.qbits.customapps.model;
 
 import java.io.Serializable;
 import java.time.Instant;
+import com.kingsrook.qbits.customapps.customizers.CustomAppIconTableCustomizer;
+import com.kingsrook.qbits.customapps.metadata.ViewScreenGenericCompositeWidgetMetaDataProducer;
+import com.kingsrook.qqq.backend.core.actions.customizers.TableCustomizers;
 import com.kingsrook.qqq.backend.core.exceptions.QException;
 import com.kingsrook.qqq.backend.core.model.data.QField;
 import com.kingsrook.qqq.backend.core.model.data.QRecord;
 import com.kingsrook.qqq.backend.core.model.data.QRecordEntity;
 import com.kingsrook.qqq.backend.core.model.metadata.QInstance;
+import com.kingsrook.qqq.backend.core.model.metadata.code.QCodeReference;
+import com.kingsrook.qqq.backend.core.model.metadata.fields.QFieldType;
+import com.kingsrook.qqq.backend.core.model.metadata.fields.QVirtualFieldMetaData;
 import com.kingsrook.qqq.backend.core.model.metadata.fields.ValueTooLongBehavior;
 import com.kingsrook.qqq.backend.core.model.metadata.layout.QIcon;
 import com.kingsrook.qqq.backend.core.model.metadata.producers.MetaDataCustomizerInterface;
 import com.kingsrook.qqq.backend.core.model.metadata.producers.annotations.QMetaDataProducingEntity;
+import com.kingsrook.qqq.backend.core.model.metadata.tables.QFieldSectionAlternativeType;
 import com.kingsrook.qqq.backend.core.model.metadata.tables.QTableMetaData;
 import com.kingsrook.qqq.backend.core.model.metadata.tables.SectionFactory;
 import com.kingsrook.qqq.backend.core.model.metadata.tables.UniqueKey;
@@ -71,8 +78,24 @@ public class CustomAppIcon extends QRecordEntity implements Serializable
             .withRecordLabelFormat("%s")
             .withRecordLabelFields("name")
             .withSection(SectionFactory.defaultT1("id"))
-            .withSection(SectionFactory.defaultT2("name", "iconId"))
+            .withSection(SectionFactory.defaultT2("name", "iconId").withGridColumns(12)
+               .withAlternative(QFieldSectionAlternativeType.RECORD_VIEW, (s) ->
+                  {
+                     s.getFieldNames().add("divider");
+                     s.getFieldNames().add("iconPreview");
+                  }
+               ))
             .withSection(SectionFactory.defaultT3("createDate", "modifyDate"));
+
+         table.withCustomizer(TableCustomizers.POST_QUERY_RECORD, new QCodeReference(CustomAppIconTableCustomizer.class));
+
+         ////////////////////
+         // virtual fields //
+         ////////////////////
+         table.withVirtualField(ViewScreenGenericCompositeWidgetMetaDataProducer.applyToField(
+            new QVirtualFieldMetaData("iconPreview", QFieldType.STRING)));
+         table.withVirtualField(ViewScreenGenericCompositeWidgetMetaDataProducer.applyToField(
+            new QVirtualFieldMetaData("divider", QFieldType.STRING)));
 
          return (table);
       }
