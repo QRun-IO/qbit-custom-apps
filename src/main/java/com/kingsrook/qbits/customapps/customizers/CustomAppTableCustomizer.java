@@ -19,6 +19,8 @@ import com.kingsrook.qqq.backend.core.actions.tables.DeleteAction;
 import com.kingsrook.qqq.backend.core.actions.tables.InsertAction;
 import com.kingsrook.qqq.backend.core.actions.tables.UpdateAction;
 import com.kingsrook.qqq.backend.core.exceptions.QException;
+import com.kingsrook.qqq.backend.core.model.actions.metadata.TableMetaDataInput;
+import com.kingsrook.qqq.backend.core.model.actions.metadata.TableMetaDataOutput;
 import com.kingsrook.qqq.backend.core.model.actions.tables.delete.DeleteInput;
 import com.kingsrook.qqq.backend.core.model.actions.tables.insert.InsertInput;
 import com.kingsrook.qqq.backend.core.model.actions.tables.insert.InsertOutput;
@@ -32,6 +34,18 @@ import com.kingsrook.qqq.backend.core.utils.ValueUtils;
  *******************************************************************************/
 public class CustomAppTableCustomizer implements TableCustomizerInterface
 {
+
+   /*******************************************************************************
+    ** custom actions to run after table meta data was created by the meta data action
+    **
+    *******************************************************************************/
+   @Override
+   public void postMetaDataAction(TableMetaDataInput tableMetaDataInput, TableMetaDataOutput tableMetaDataOutput) throws QException
+   {
+      CustomAppsUtils.addDynamicIconChipAdornments(tableMetaDataOutput.getTable(), "customAppIconId");
+   }
+
+
 
    /***************************************************************************
     **
@@ -122,7 +136,7 @@ public class CustomAppTableCustomizer implements TableCustomizerInterface
     ***************************************************************************/
    public Permission buildPermission(CustomApp app) throws QException
    {
-      String appName = CustomAppsUtils.getAppName(app.getName(), CustomApp.TABLE_NAME);
+      String appName = CustomAppsUtils.getCamelCaseName(app.getName(), CustomApp.TABLE_NAME);
 
       //////////////////////////////////////
       // insert a permission for this app //

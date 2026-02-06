@@ -44,7 +44,7 @@ import com.kingsrook.qqq.backend.core.model.metadata.fields.QFieldMetaData;
  * e.g., generic widget to be used on table virtual fields, to display a composite
  * block widget.
  *******************************************************************************/
-public class ViewScreenGenericCompositeWidgetMetaDataProducer extends MetaDataProducer<QWidgetMetaData>
+public class CustomAppsGenericCompositeWidgetMetaDataProducer extends MetaDataProducer<QWidgetMetaData>
 {
    public static final String NAME = "ViewScreenGenericCompositeWidget";
 
@@ -75,7 +75,7 @@ public class ViewScreenGenericCompositeWidgetMetaDataProducer extends MetaDataPr
    public static <T extends QFieldMetaData> T applyToField(T field)
    {
       field.withFieldAdornment(new FieldAdornment(AdornmentType.WIDGET)
-         .withValue(AdornmentType.WidgetValues.WIDGET_NAME, ViewScreenGenericCompositeWidgetMetaDataProducer.NAME));
+         .withValue(AdornmentType.WidgetValues.WIDGET_NAME, CustomAppsGenericCompositeWidgetMetaDataProducer.NAME));
       return (field);
    }
 

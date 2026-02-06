@@ -33,6 +33,7 @@ import com.kingsrook.qqq.backend.core.model.data.QRecord;
 import com.kingsrook.qqq.backend.core.model.data.QRecordEntity;
 import com.kingsrook.qqq.backend.core.model.metadata.QInstance;
 import com.kingsrook.qqq.backend.core.model.metadata.code.QCodeReference;
+import com.kingsrook.qqq.backend.core.model.metadata.fields.AdornmentType;
 import com.kingsrook.qqq.backend.core.model.metadata.fields.ValueTooLongBehavior;
 import com.kingsrook.qqq.backend.core.model.metadata.layout.QIcon;
 import com.kingsrook.qqq.backend.core.model.metadata.producers.MetaDataCustomizerInterface;
@@ -80,11 +81,12 @@ public class CustomApp extends QRecordEntity implements Serializable
             .withSection(new QFieldSection("users", new QIcon().withName("person"), Tier.T2).withWidgetName("customAppPermissions"))
             .withSection(SectionFactory.defaultT3("createDate", "modifyDate"))
 
+            .withCustomizer(TableCustomizers.POST_META_DATA, new QCodeReference(CustomAppTableCustomizer.class))
             .withCustomizer(TableCustomizers.POST_DELETE_RECORD, new QCodeReference(CustomAppTableCustomizer.class))
             .withCustomizer(TableCustomizers.PRE_INSERT_RECORD, new QCodeReference(CustomAppTableCustomizer.class))
             .withCustomizer(TableCustomizers.PRE_UPDATE_RECORD, new QCodeReference(CustomAppTableCustomizer.class));
 
-         // .withExposedJoin(new ExposedJoin().withJoinPath(List.of(CustomAppJoinUserPermissionIntMetaDataProducer.NAME)).withJoinTable(UserPermissionInt.TABLE_NAME));
+         table.getField("customAppIconId").withFieldAdornment(AdornmentType.CHIP);
 
          return (table);
       }

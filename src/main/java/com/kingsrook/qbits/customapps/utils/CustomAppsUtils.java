@@ -22,9 +22,22 @@
 package com.kingsrook.qbits.customapps.utils;
 
 
+import java.util.List;
+import java.util.Optional;
 import com.kingsrook.qbits.customapps.model.CustomApp;
 import com.kingsrook.qbits.customapps.model.CustomAppContainer;
+import com.kingsrook.qbits.customapps.model.CustomAppIcon;
+import com.kingsrook.qbits.customapps.model.CustomAppSection;
+import com.kingsrook.qqq.backend.core.actions.tables.QueryAction;
+import com.kingsrook.qqq.backend.core.exceptions.QException;
+import com.kingsrook.qqq.backend.core.model.actions.tables.query.QFilterOrderBy;
+import com.kingsrook.qqq.backend.core.model.actions.tables.query.QQueryFilter;
+import com.kingsrook.qqq.backend.core.model.metadata.fields.AdornmentType;
+import com.kingsrook.qqq.backend.core.model.metadata.fields.FieldAdornment;
+import com.kingsrook.qqq.backend.core.model.metadata.frontend.QFrontendFieldMetaData;
+import com.kingsrook.qqq.backend.core.model.metadata.frontend.QFrontendTableMetaData;
 import com.kingsrook.qqq.backend.core.utils.StringUtils;
+import static com.kingsrook.qqq.backend.core.model.metadata.fields.AdornmentType.ChipValues.iconAndColorValues;
 
 
 /*******************************************************************************
@@ -35,23 +48,46 @@ public class CustomAppsUtils
    /***************************************************************************
     **
     ***************************************************************************/
-   public static String getAppName(String appName, String tableName)
+   public static void addDynamicIconChipAdornments(QFrontendTableMetaData table, String fieldName) throws QException
    {
-      appName = nameToCamelCase(appName);
+      QFrontendFieldMetaData   field            = table.getFields().get(fieldName);
+      Optional<FieldAdornment> chipAdornmentOpt = field.getAdornments().stream().filter(a -> a.getType().equals(AdornmentType.CHIP)).findFirst();
+      if(chipAdornmentOpt.isPresent())
+      {
+         ////////////////////////////////////////////////////////////
+         // look up all icons in the system and add chips for them //
+         ////////////////////////////////////////////////////////////
+         List<CustomAppIcon> customAppIcons = QueryAction.execute(CustomAppIcon.TABLE_NAME, CustomAppIcon.class, new QQueryFilter().withOrderBy(new QFilterOrderBy("name")));
+         for(CustomAppIcon icon : customAppIcons)
+         {
+            chipAdornmentOpt.get().withValues(iconAndColorValues(icon.getId(), icon.getIconId(), AdornmentType.ChipValues.COLOR_SECONDARY));
+         }
+      }
+   }
+
+
+
+   /***************************************************************************
+    **
+    ***************************************************************************/
+   public static String getCamelCaseName(String name, String tableName)
+   {
+      name = nameToCamelCase(name);
       switch(tableName)
       {
-         case CustomApp.TABLE_NAME -> appName = "qca" + StringUtils.ucFirst(appName);
-         case CustomAppContainer.TABLE_NAME -> appName = "qcac" + StringUtils.ucFirst(appName);
+         case CustomApp.TABLE_NAME -> name = "qca" + StringUtils.ucFirst(name);
+         case CustomAppSection.TABLE_NAME -> name = "qcas" + StringUtils.ucFirst(name);
+         case CustomAppContainer.TABLE_NAME -> name = "qcac" + StringUtils.ucFirst(name);
          default ->
          {
             ////////////////////////////////////////////////////////////
             // dont add a prefix in this case and lowercase the start //
             ////////////////////////////////////////////////////////////
-            appName = StringUtils.lcFirst(appName);
+            name = StringUtils.lcFirst(name);
          }
       }
 
-      return (appName);
+      return (name);
    }
 
 

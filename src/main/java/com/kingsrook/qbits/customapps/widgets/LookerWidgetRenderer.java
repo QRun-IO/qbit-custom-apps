@@ -8,6 +8,7 @@ package com.kingsrook.qbits.customapps.widgets;
 import java.util.Map;
 import com.kingsrook.qqq.backend.core.actions.dashboard.widgets.AbstractWidgetRenderer;
 import com.kingsrook.qqq.backend.core.exceptions.QException;
+import com.kingsrook.qqq.backend.core.exceptions.QUserFacingException;
 import com.kingsrook.qqq.backend.core.model.actions.widgets.RenderWidgetInput;
 import com.kingsrook.qqq.backend.core.model.actions.widgets.RenderWidgetOutput;
 import com.kingsrook.qqq.backend.core.model.dashboard.widgets.QWidgetData;
@@ -27,16 +28,18 @@ public class LookerWidgetRenderer extends AbstractWidgetRenderer
    {
       try
       {
-         Map<String, String> queryParams   = input.getQueryParams();
-         Integer             dashboardSlug = queryParams.containsKey("dashboardSlug") ? Integer.parseInt(queryParams.get("dashboardSlug")) : null;
-
-         int dashboardId = -1;
-         if(queryParams.containsKey("dashboardId") && queryParams.get("dashboardId") != null)
+         Map<String, String> queryParams = input.getQueryParams();
+         if(!queryParams.containsKey("dashboardId") || queryParams.get("dashboardId") == null)
          {
-            dashboardId = Integer.parseInt(queryParams.get("dashboardId"));
-
+            throw (new QUserFacingException("LookerWidgetRenderer requires a dashboardId to be provided."));
          }
+
+         int dashboardId = Integer.parseInt(queryParams.get("dashboardId"));
          return (new RenderWidgetOutput(new LookerWidgetData().withDashboardId(dashboardId)));
+      }
+      catch(QException qe)
+      {
+         throw (qe);
       }
       catch(Exception e)
       {

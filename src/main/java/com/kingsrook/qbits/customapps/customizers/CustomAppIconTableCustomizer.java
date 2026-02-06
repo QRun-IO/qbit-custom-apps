@@ -6,7 +6,7 @@ package com.kingsrook.qbits.customapps.customizers;
 
 
 import java.util.List;
-import com.kingsrook.qbits.customapps.metadata.ViewScreenGenericCompositeWidgetMetaDataProducer;
+import com.kingsrook.qbits.customapps.metadata.CustomAppsGenericCompositeWidgetMetaDataProducer;
 import com.kingsrook.qbits.customapps.model.CustomAppIcon;
 import com.kingsrook.qqq.backend.core.actions.customizers.TableCustomizerInterface;
 import com.kingsrook.qqq.backend.core.exceptions.QException;
@@ -76,7 +76,7 @@ public class CustomAppIconTableCustomizer implements TableCustomizerInterface
       CustomAppIcon customAppIcon = new CustomAppIcon(record);
       if(customAppIcon.getIconId() != null && customAppIcon.getName() != null)
       {
-         ViewScreenGenericCompositeWidgetMetaDataProducer.setDividerValue(record, "divider");
+         CustomAppsGenericCompositeWidgetMetaDataProducer.setDividerValue(record, "divider");
 
          CompositeWidgetData previewComposite = new CompositeWidgetData().withLayout(CompositeWidgetData.Layout.FLEX_ROW)
             .withBlock(valueTextBlock(LABEL_COLOR, "Icon Preview: "))

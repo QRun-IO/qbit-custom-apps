@@ -25,7 +25,7 @@ package com.kingsrook.qbits.customapps.model;
 import java.io.Serializable;
 import java.time.Instant;
 import com.kingsrook.qbits.customapps.customizers.CustomAppIconTableCustomizer;
-import com.kingsrook.qbits.customapps.metadata.ViewScreenGenericCompositeWidgetMetaDataProducer;
+import com.kingsrook.qbits.customapps.metadata.CustomAppsGenericCompositeWidgetMetaDataProducer;
 import com.kingsrook.qqq.backend.core.actions.customizers.TableCustomizers;
 import com.kingsrook.qqq.backend.core.exceptions.QException;
 import com.kingsrook.qqq.backend.core.model.data.QField;
@@ -92,9 +92,9 @@ public class CustomAppIcon extends QRecordEntity implements Serializable
          ////////////////////
          // virtual fields //
          ////////////////////
-         table.withVirtualField(ViewScreenGenericCompositeWidgetMetaDataProducer.applyToField(
+         table.withVirtualField(CustomAppsGenericCompositeWidgetMetaDataProducer.applyToField(
             new QVirtualFieldMetaData("iconPreview", QFieldType.STRING)));
-         table.withVirtualField(ViewScreenGenericCompositeWidgetMetaDataProducer.applyToField(
+         table.withVirtualField(CustomAppsGenericCompositeWidgetMetaDataProducer.applyToField(
             new QVirtualFieldMetaData("divider", QFieldType.STRING)));
 
          return (table);

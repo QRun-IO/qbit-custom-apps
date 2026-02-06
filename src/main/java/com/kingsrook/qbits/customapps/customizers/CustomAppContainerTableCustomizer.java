@@ -20,6 +20,8 @@ import com.kingsrook.qqq.backend.core.actions.tables.DeleteAction;
 import com.kingsrook.qqq.backend.core.actions.tables.InsertAction;
 import com.kingsrook.qqq.backend.core.actions.tables.UpdateAction;
 import com.kingsrook.qqq.backend.core.exceptions.QException;
+import com.kingsrook.qqq.backend.core.model.actions.metadata.TableMetaDataInput;
+import com.kingsrook.qqq.backend.core.model.actions.metadata.TableMetaDataOutput;
 import com.kingsrook.qqq.backend.core.model.actions.tables.delete.DeleteInput;
 import com.kingsrook.qqq.backend.core.model.actions.tables.insert.InsertInput;
 import com.kingsrook.qqq.backend.core.model.actions.tables.insert.InsertOutput;
@@ -33,6 +35,21 @@ import com.kingsrook.qqq.backend.core.utils.ValueUtils;
  *******************************************************************************/
 public class CustomAppContainerTableCustomizer implements TableCustomizerInterface
 {
+
+   /*******************************************************************************
+    ** custom actions to run after table meta data was created by the meta data action
+    **
+    *******************************************************************************/
+   @Override
+   public void postMetaDataAction(TableMetaDataInput tableMetaDataInput, TableMetaDataOutput tableMetaDataOutput) throws QException
+   {
+      /////////////////////////////////
+      // add dynamic chips for icons //
+      /////////////////////////////////
+      CustomAppsUtils.addDynamicIconChipAdornments(tableMetaDataOutput.getTable(), "customAppIconId");
+   }
+
+
 
    /***************************************************************************
     **
@@ -125,7 +142,7 @@ public class CustomAppContainerTableCustomizer implements TableCustomizerInterfa
     ***************************************************************************/
    public Permission buildPermission(CustomAppContainer container) throws QException
    {
-      String appName = CustomAppsUtils.getAppName(container.getName(), CustomAppContainer.TABLE_NAME);
+      String appName = CustomAppsUtils.getCamelCaseName(container.getName(), CustomAppContainer.TABLE_NAME);
 
       ////////////////////////////////////////////
       // insert a permission for this container //

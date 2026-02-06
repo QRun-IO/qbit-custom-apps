@@ -25,6 +25,7 @@ package com.kingsrook.qbits.customapps.model;
 import java.io.Serializable;
 import java.time.Instant;
 import com.kingsrook.qbits.customapps.customizers.CustomAppContainerTableCustomizer;
+import com.kingsrook.qbits.customapps.metadata.CustomAppContainerPlaceBeforeContainerPVSMetaDataProducer;
 import com.kingsrook.qbits.userrolepermissions.model.Permission;
 import com.kingsrook.qqq.backend.core.actions.customizers.TableCustomizers;
 import com.kingsrook.qqq.backend.core.exceptions.QException;
@@ -33,6 +34,7 @@ import com.kingsrook.qqq.backend.core.model.data.QRecord;
 import com.kingsrook.qqq.backend.core.model.data.QRecordEntity;
 import com.kingsrook.qqq.backend.core.model.metadata.QInstance;
 import com.kingsrook.qqq.backend.core.model.metadata.code.QCodeReference;
+import com.kingsrook.qqq.backend.core.model.metadata.fields.AdornmentType;
 import com.kingsrook.qqq.backend.core.model.metadata.fields.ValueTooLongBehavior;
 import com.kingsrook.qqq.backend.core.model.metadata.joins.QJoinMetaData;
 import com.kingsrook.qqq.backend.core.model.metadata.layout.QIcon;
@@ -90,16 +92,18 @@ public class CustomAppContainer extends QRecordEntity implements Serializable
             .withRecordLabelFormat("%s")
             .withRecordLabelFields("name")
             .withSection(SectionFactory.defaultT1("id"))
-            .withSection(SectionFactory.defaultT2("name", "customAppIconId", "sequenceNo", "permissionId"))
+            .withSection(SectionFactory.defaultT2("name", "customAppIconId", "placeBeforeContainer", "sequenceNo", "permissionId"))
             .withSection(SectionFactory.customT2("apps", new QIcon("polyline")).withWidgetName(sectionsChildJoinName))
             .withSection(new QFieldSection("users", new QIcon().withName("person"), Tier.T2).withWidgetName("customAppContainerPermissions"))
             .withSection(SectionFactory.defaultT3("createDate", "modifyDate"))
 
+            .withCustomizer(TableCustomizers.POST_META_DATA, new QCodeReference(CustomAppContainerTableCustomizer.class))
             .withCustomizer(TableCustomizers.POST_DELETE_RECORD, new QCodeReference(CustomAppContainerTableCustomizer.class))
+            .withCustomizer(TableCustomizers.POST_QUERY_RECORD, new QCodeReference(CustomAppContainerTableCustomizer.class))
             .withCustomizer(TableCustomizers.PRE_INSERT_RECORD, new QCodeReference(CustomAppContainerTableCustomizer.class))
             .withCustomizer(TableCustomizers.PRE_UPDATE_RECORD, new QCodeReference(CustomAppContainerTableCustomizer.class));
 
-         // .withExposedJoin(new ExposedJoin().withJoinPath(List.of(CustomAppContainerJoinUserPermissionIntMetaDataProducer.NAME)).withJoinTable(UserPermissionInt.TABLE_NAME));
+         table.getField("customAppIconId").withFieldAdornment(AdornmentType.CHIP);
 
          return (table);
       }
@@ -116,7 +120,10 @@ public class CustomAppContainer extends QRecordEntity implements Serializable
    @QField(label = "Icon", isRequired = true, possibleValueSourceName = CustomAppIcon.TABLE_NAME)
    private Integer customAppIconId;
 
-   @QField(isRequired = true)
+   @QField(possibleValueSourceName = CustomAppContainerPlaceBeforeContainerPVSMetaDataProducer.NAME)
+   private String placeBeforeContainer;
+
+   @QField()
    private Integer sequenceNo;
 
    @QField(isEditable = false, possibleValueSourceName = Permission.TABLE_NAME)
@@ -274,31 +281,31 @@ public class CustomAppContainer extends QRecordEntity implements Serializable
 
 
    /*******************************************************************************
-    ** Getter for sequenceNo
+    ** Getter for placeBeforeContainer
     *******************************************************************************/
-   public Integer getSequenceNo()
+   public String getPlaceBeforeContainer()
    {
-      return (this.sequenceNo);
+      return (this.placeBeforeContainer);
    }
 
 
 
    /*******************************************************************************
-    ** Setter for sequenceNo
+    ** Setter for placeBeforeContainer
     *******************************************************************************/
-   public void setSequenceNo(Integer sequenceNo)
+   public void setPlaceBeforeContainer(String placeBeforeContainer)
    {
-      this.sequenceNo = sequenceNo;
+      this.placeBeforeContainer = placeBeforeContainer;
    }
 
 
 
    /*******************************************************************************
-    ** Fluent setter for sequenceNo
+    ** Fluent setter for placeBeforeContainer
     *******************************************************************************/
-   public CustomAppContainer withSequenceNo(Integer sequenceNo)
+   public CustomAppContainer withPlaceBeforeContainer(String placeBeforeContainer)
    {
-      this.sequenceNo = sequenceNo;
+      this.placeBeforeContainer = placeBeforeContainer;
       return (this);
    }
 
@@ -361,6 +368,37 @@ public class CustomAppContainer extends QRecordEntity implements Serializable
    public CustomAppContainer withPermissionId(Integer permissionId)
    {
       this.permissionId = permissionId;
+      return (this);
+   }
+
+
+
+   /*******************************************************************************
+    ** Getter for sequenceNo
+    *******************************************************************************/
+   public Integer getSequenceNo()
+   {
+      return (this.sequenceNo);
+   }
+
+
+
+   /*******************************************************************************
+    ** Setter for sequenceNo
+    *******************************************************************************/
+   public void setSequenceNo(Integer sequenceNo)
+   {
+      this.sequenceNo = sequenceNo;
+   }
+
+
+
+   /*******************************************************************************
+    ** Fluent setter for sequenceNo
+    *******************************************************************************/
+   public CustomAppContainer withSequenceNo(Integer sequenceNo)
+   {
+      this.sequenceNo = sequenceNo;
       return (this);
    }
 

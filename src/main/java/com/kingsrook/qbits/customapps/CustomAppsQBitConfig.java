@@ -23,13 +23,10 @@ package com.kingsrook.qbits.customapps;
 
 
 import java.util.List;
-import java.util.Optional;
 import com.kingsrook.qqq.api.model.metadata.ApiInstanceMetaData;
-import com.kingsrook.qqq.backend.core.context.QContext;
 import com.kingsrook.qqq.backend.core.model.metadata.QInstance;
 import com.kingsrook.qqq.backend.core.model.metadata.producers.MetaDataCustomizerInterface;
 import com.kingsrook.qqq.backend.core.model.metadata.qbits.QBitConfig;
-import com.kingsrook.qqq.backend.core.model.metadata.qbits.QBitMetaData;
 import com.kingsrook.qqq.backend.core.model.metadata.tables.QTableMetaData;
 import com.kingsrook.qqq.backend.core.utils.ClassPathUtils;
 
@@ -56,17 +53,6 @@ public class CustomAppsQBitConfig implements QBitConfig
    public CustomAppsQBitConfig()
    {
       apiMiddlewareModuleAvailable = ClassPathUtils.isClassAvailable(ApiInstanceMetaData.class.getName());
-   }
-
-
-
-   /***************************************************************************
-    *
-    ***************************************************************************/
-   public static boolean isApiModuleAvailableAndDoesQBitIncludeApiVersions()
-   {
-      Optional<QBitMetaData> optionalQBitConfig = QContext.getQInstance().getQBits().values().stream().filter(qb -> qb.getConfig() instanceof CustomAppsQBitConfig).findFirst();
-      return (CustomAppsQBitConfig.getApiMiddlewareModuleAvailable() && optionalQBitConfig.isPresent() && ((CustomAppsQBitConfig) (optionalQBitConfig.get().getConfig())).getIncludeApiVersions());
    }
 
 
