@@ -86,7 +86,7 @@
       <dependency>
          <groupId>com.kingsrook.qqq</groupId>
          <artifactId>qqq-backend-core</artifactId>
-         <version>0.40.0-custom-apps-qbit-4f4d85ef-20260204.160813-1</version>
+         <version>0.40.0-custom-apps-qbit-11ac93df-20260206.213540-1</version>
       </dependency>
       <dependency>
          <groupId>com.kingsrook.qbits</groupId>
