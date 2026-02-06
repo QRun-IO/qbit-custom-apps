@@ -97,7 +97,7 @@ public class CustomAppContainer extends QRecordEntity implements Serializable
             .withSection(new QFieldSection("users", new QIcon().withName("person"), Tier.T2).withWidgetName("customAppContainerPermissions"))
             .withSection(SectionFactory.defaultT3("createDate", "modifyDate"))
 
-            .withCustomizer(TableCustomizers.POST_META_DATA, new QCodeReference(CustomAppContainerTableCustomizer.class))
+            .withCustomizer(TableCustomizers.POST_META_DATA_ACTION, new QCodeReference(CustomAppContainerTableCustomizer.class))
             .withCustomizer(TableCustomizers.POST_DELETE_RECORD, new QCodeReference(CustomAppContainerTableCustomizer.class))
             .withCustomizer(TableCustomizers.POST_QUERY_RECORD, new QCodeReference(CustomAppContainerTableCustomizer.class))
             .withCustomizer(TableCustomizers.PRE_INSERT_RECORD, new QCodeReference(CustomAppContainerTableCustomizer.class))

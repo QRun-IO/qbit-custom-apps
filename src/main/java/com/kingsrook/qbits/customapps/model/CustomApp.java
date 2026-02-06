@@ -81,7 +81,7 @@ public class CustomApp extends QRecordEntity implements Serializable
             .withSection(new QFieldSection("users", new QIcon().withName("person"), Tier.T2).withWidgetName("customAppPermissions"))
             .withSection(SectionFactory.defaultT3("createDate", "modifyDate"))
 
-            .withCustomizer(TableCustomizers.POST_META_DATA, new QCodeReference(CustomAppTableCustomizer.class))
+            .withCustomizer(TableCustomizers.POST_META_DATA_ACTION, new QCodeReference(CustomAppTableCustomizer.class))
             .withCustomizer(TableCustomizers.POST_DELETE_RECORD, new QCodeReference(CustomAppTableCustomizer.class))
             .withCustomizer(TableCustomizers.PRE_INSERT_RECORD, new QCodeReference(CustomAppTableCustomizer.class))
             .withCustomizer(TableCustomizers.PRE_UPDATE_RECORD, new QCodeReference(CustomAppTableCustomizer.class));
