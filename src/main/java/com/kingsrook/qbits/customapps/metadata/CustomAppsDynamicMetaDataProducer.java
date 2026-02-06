@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import com.kingsrook.qbits.customapps.CustomAppsQBitProducer;
 import com.kingsrook.qbits.customapps.model.CustomApp;
 import com.kingsrook.qbits.customapps.model.CustomAppBackendConfig;
 import com.kingsrook.qbits.customapps.model.CustomAppBackendEnum;
@@ -234,7 +233,7 @@ public class CustomAppsDynamicMetaDataProducer
          positionMap.put(containerName, container.getPlaceBeforeContainer());
       }
 
-      return (new CustomAppsQBitProducer.CustomAppData(containers, positionMap, appMap, widgetMap));
+      return (new CustomAppData(containers, positionMap, appMap, widgetMap));
    }
 
 
