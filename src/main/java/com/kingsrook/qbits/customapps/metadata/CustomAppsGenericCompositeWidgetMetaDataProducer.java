@@ -46,7 +46,7 @@ import com.kingsrook.qqq.backend.core.model.metadata.fields.QFieldMetaData;
  *******************************************************************************/
 public class CustomAppsGenericCompositeWidgetMetaDataProducer extends MetaDataProducer<QWidgetMetaData>
 {
-   public static final String NAME = "ViewScreenGenericCompositeWidget";
+   public static final String NAME = "CustomAppsGenericCompositeWidget";
 
 
 

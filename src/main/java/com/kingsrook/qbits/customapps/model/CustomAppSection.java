@@ -91,7 +91,7 @@ public class CustomAppSection extends QRecordEntity implements Serializable
             .withSection(SectionFactory.customT2("apps", new QIcon("polyline")).withWidgetName(appsChildJoinName))
             .withSection(SectionFactory.defaultT3("createDate", "modifyDate"))
 
-            .withAssociation(new Association().withName(ASSOCIATION_NAME_CUSTOM_APPS).withJoinName(appsChildJoinName).withAssociatedTableName(CustomAppSection.TABLE_NAME));
+            .withAssociation(new Association().withName(ASSOCIATION_NAME_CUSTOM_APPS).withJoinName(appsChildJoinName).withAssociatedTableName(CustomApp.TABLE_NAME));
 
          return (table);
       }
