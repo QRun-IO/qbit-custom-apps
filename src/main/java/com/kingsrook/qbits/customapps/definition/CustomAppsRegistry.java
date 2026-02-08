@@ -124,7 +124,7 @@ public class CustomAppsRegistry implements QSupplementalInstanceMetaData, QHelpC
    @Override
    public void acceptHelpContent(QInstance qInstance, QHelpContent helpContent, Map<String, String> nameValuePairs)
    {
-      // todo?
+      // not yet needed
    }
 
 }

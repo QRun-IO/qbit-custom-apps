@@ -24,7 +24,9 @@ package com.kingsrook.qbits.customapps.model;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.List;
 import com.kingsrook.qqq.backend.core.exceptions.QException;
+import com.kingsrook.qqq.backend.core.model.data.QAssociation;
 import com.kingsrook.qqq.backend.core.model.data.QField;
 import com.kingsrook.qqq.backend.core.model.data.QRecord;
 import com.kingsrook.qqq.backend.core.model.data.QRecordEntity;
@@ -37,6 +39,7 @@ import com.kingsrook.qqq.backend.core.model.metadata.producers.annotations.Child
 import com.kingsrook.qqq.backend.core.model.metadata.producers.annotations.ChildRecordListWidget;
 import com.kingsrook.qqq.backend.core.model.metadata.producers.annotations.ChildTable;
 import com.kingsrook.qqq.backend.core.model.metadata.producers.annotations.QMetaDataProducingEntity;
+import com.kingsrook.qqq.backend.core.model.metadata.tables.Association;
 import com.kingsrook.qqq.backend.core.model.metadata.tables.QTableMetaData;
 import com.kingsrook.qqq.backend.core.model.metadata.tables.SectionFactory;
 import com.kingsrook.qqq.backend.core.model.metadata.tables.UniqueKey;
@@ -59,7 +62,8 @@ import com.kingsrook.qqq.backend.core.model.metadata.tables.UniqueKey;
 )
 public class CustomAppSection extends QRecordEntity implements Serializable
 {
-   public static final String TABLE_NAME = "customAppSection";
+   public static final String TABLE_NAME                   = "customAppSection";
+   public static final String ASSOCIATION_NAME_CUSTOM_APPS = "customApps";
 
 
 
@@ -85,7 +89,9 @@ public class CustomAppSection extends QRecordEntity implements Serializable
             .withSection(SectionFactory.defaultT1("id"))
             .withSection(SectionFactory.defaultT2("customAppContainerId", "name", "sequenceNo"))
             .withSection(SectionFactory.customT2("apps", new QIcon("polyline")).withWidgetName(appsChildJoinName))
-            .withSection(SectionFactory.defaultT3("createDate", "modifyDate"));
+            .withSection(SectionFactory.defaultT3("createDate", "modifyDate"))
+
+            .withAssociation(new Association().withName(ASSOCIATION_NAME_CUSTOM_APPS).withJoinName(appsChildJoinName).withAssociatedTableName(CustomAppSection.TABLE_NAME));
 
          return (table);
       }
@@ -110,6 +116,9 @@ public class CustomAppSection extends QRecordEntity implements Serializable
 
    @QField(isEditable = false)
    private Instant modifyDate;
+
+   @QAssociation(name = ASSOCIATION_NAME_CUSTOM_APPS)
+   private List<CustomApp> apps;
 
 
 
@@ -313,6 +322,37 @@ public class CustomAppSection extends QRecordEntity implements Serializable
    public CustomAppSection withCustomAppContainerId(Integer customAppContainerId)
    {
       this.customAppContainerId = customAppContainerId;
+      return (this);
+   }
+
+
+
+   /*******************************************************************************
+    ** Getter for apps
+    *******************************************************************************/
+   public List<CustomApp> getApps()
+   {
+      return (this.apps);
+   }
+
+
+
+   /*******************************************************************************
+    ** Setter for apps
+    *******************************************************************************/
+   public void setApps(List<CustomApp> apps)
+   {
+      this.apps = apps;
+   }
+
+
+
+   /*******************************************************************************
+    ** Fluent setter for apps
+    *******************************************************************************/
+   public CustomAppSection withApps(List<CustomApp> apps)
+   {
+      this.apps = apps;
       return (this);
    }
 

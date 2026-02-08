@@ -24,11 +24,13 @@ package com.kingsrook.qbits.customapps.model;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.List;
 import com.kingsrook.qbits.customapps.customizers.CustomAppContainerTableCustomizer;
 import com.kingsrook.qbits.customapps.metadata.CustomAppContainerPlaceBeforeContainerPVSMetaDataProducer;
 import com.kingsrook.qbits.userrolepermissions.model.Permission;
 import com.kingsrook.qqq.backend.core.actions.customizers.TableCustomizers;
 import com.kingsrook.qqq.backend.core.exceptions.QException;
+import com.kingsrook.qqq.backend.core.model.data.QAssociation;
 import com.kingsrook.qqq.backend.core.model.data.QField;
 import com.kingsrook.qqq.backend.core.model.data.QRecord;
 import com.kingsrook.qqq.backend.core.model.data.QRecordEntity;
@@ -43,6 +45,7 @@ import com.kingsrook.qqq.backend.core.model.metadata.producers.annotations.Child
 import com.kingsrook.qqq.backend.core.model.metadata.producers.annotations.ChildRecordListWidget;
 import com.kingsrook.qqq.backend.core.model.metadata.producers.annotations.ChildTable;
 import com.kingsrook.qqq.backend.core.model.metadata.producers.annotations.QMetaDataProducingEntity;
+import com.kingsrook.qqq.backend.core.model.metadata.tables.Association;
 import com.kingsrook.qqq.backend.core.model.metadata.tables.QFieldSection;
 import com.kingsrook.qqq.backend.core.model.metadata.tables.QTableMetaData;
 import com.kingsrook.qqq.backend.core.model.metadata.tables.SectionFactory;
@@ -67,7 +70,8 @@ import com.kingsrook.qqq.backend.core.model.metadata.tables.UniqueKey;
 )
 public class CustomAppContainer extends QRecordEntity implements Serializable
 {
-   public static final String TABLE_NAME = "customAppContainer";
+   public static final String TABLE_NAME                           = "customAppContainer";
+   public static final String ASSOCIATION_NAME_CUSTOM_APP_SECTIONS = "customAppSections";
 
 
 
@@ -101,7 +105,9 @@ public class CustomAppContainer extends QRecordEntity implements Serializable
             .withCustomizer(TableCustomizers.POST_DELETE_RECORD, new QCodeReference(CustomAppContainerTableCustomizer.class))
             .withCustomizer(TableCustomizers.POST_QUERY_RECORD, new QCodeReference(CustomAppContainerTableCustomizer.class))
             .withCustomizer(TableCustomizers.PRE_INSERT_RECORD, new QCodeReference(CustomAppContainerTableCustomizer.class))
-            .withCustomizer(TableCustomizers.PRE_UPDATE_RECORD, new QCodeReference(CustomAppContainerTableCustomizer.class));
+            .withCustomizer(TableCustomizers.PRE_UPDATE_RECORD, new QCodeReference(CustomAppContainerTableCustomizer.class))
+
+            .withAssociation(new Association().withName(ASSOCIATION_NAME_CUSTOM_APP_SECTIONS).withJoinName(sectionsChildJoinName).withAssociatedTableName(CustomAppSection.TABLE_NAME));
 
          table.getField("customAppIconId").withFieldAdornment(AdornmentType.CHIP);
 
@@ -134,6 +140,9 @@ public class CustomAppContainer extends QRecordEntity implements Serializable
 
    @QField(isEditable = false)
    private Instant modifyDate;
+
+   @QAssociation(name = ASSOCIATION_NAME_CUSTOM_APP_SECTIONS)
+   private List<CustomAppSection> sections;
 
 
 
@@ -399,6 +408,37 @@ public class CustomAppContainer extends QRecordEntity implements Serializable
    public CustomAppContainer withSequenceNo(Integer sequenceNo)
    {
       this.sequenceNo = sequenceNo;
+      return (this);
+   }
+
+
+
+   /*******************************************************************************
+    ** Getter for sections
+    *******************************************************************************/
+   public List<CustomAppSection> getSections()
+   {
+      return (this.sections);
+   }
+
+
+
+   /*******************************************************************************
+    ** Setter for sections
+    *******************************************************************************/
+   public void setSections(List<CustomAppSection> sections)
+   {
+      this.sections = sections;
+   }
+
+
+
+   /*******************************************************************************
+    ** Fluent setter for sections
+    *******************************************************************************/
+   public CustomAppContainer withSections(List<CustomAppSection> sections)
+   {
+      this.sections = sections;
       return (this);
    }
 
