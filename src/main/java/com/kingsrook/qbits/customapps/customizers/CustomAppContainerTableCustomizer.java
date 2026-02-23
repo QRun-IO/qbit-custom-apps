@@ -11,20 +11,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import com.kingsrook.qbits.customapps.model.CustomAppContainer;
+import com.kingsrook.qbits.customapps.utils.CustomAppPermissionUtils;
 import com.kingsrook.qbits.customapps.utils.CustomAppsUtils;
 import com.kingsrook.qbits.userrolepermissions.model.Permission;
-import com.kingsrook.qbits.userrolepermissions.model.PermissionObjectType;
 import com.kingsrook.qqq.backend.core.actions.customizers.RecordCustomizerUtilityInterface;
 import com.kingsrook.qqq.backend.core.actions.customizers.TableCustomizerInterface;
 import com.kingsrook.qqq.backend.core.actions.tables.DeleteAction;
-import com.kingsrook.qqq.backend.core.actions.tables.InsertAction;
-import com.kingsrook.qqq.backend.core.actions.tables.UpdateAction;
 import com.kingsrook.qqq.backend.core.exceptions.QException;
 import com.kingsrook.qqq.backend.core.model.actions.metadata.TableMetaDataInput;
 import com.kingsrook.qqq.backend.core.model.actions.metadata.TableMetaDataOutput;
 import com.kingsrook.qqq.backend.core.model.actions.tables.delete.DeleteInput;
 import com.kingsrook.qqq.backend.core.model.actions.tables.insert.InsertInput;
-import com.kingsrook.qqq.backend.core.model.actions.tables.insert.InsertOutput;
 import com.kingsrook.qqq.backend.core.model.actions.tables.update.UpdateInput;
 import com.kingsrook.qqq.backend.core.model.data.QRecord;
 import com.kingsrook.qqq.backend.core.utils.ValueUtils;
@@ -91,24 +88,12 @@ public class CustomAppContainerTableCustomizer implements TableCustomizerInterfa
       for(QRecord record : records)
       {
          ///////////////////////////////////////////////////////////////////////
-         // update a permission for this container (or insert if none exists) //
+         // create a permission for this container (or insert if none exists) //
          ///////////////////////////////////////////////////////////////////////
          String             name       = ValueUtils.getValueAsString(RecordCustomizerUtilityInterface.getValueFromRecordElseFromOldRecord("name", record, record.getValue("id"), oldRecordMap));
          CustomAppContainer container  = new CustomAppContainer(record).withName(name);
-         Permission         permission = buildPermission(container);
-
-         if(container.getPermissionId() == null)
-         {
-            InsertInput  permissionInput  = new InsertInput(Permission.TABLE_NAME).withRecordEntity(permission);
-            InsertOutput permissionOutput = new InsertAction().execute(permissionInput);
-            permission = new Permission(permissionOutput.getRecords().get(0));
-            record.setValue("permissionId", permission.getId());
-         }
-         else
-         {
-            UpdateInput permissionInput = new UpdateInput(Permission.TABLE_NAME).withRecordEntity(permission);
-            new UpdateAction().execute(permissionInput);
-         }
+         Permission         permission = CustomAppPermissionUtils.buildOrGetPermission(container.getName(), CustomAppContainer.TABLE_NAME);
+         record.setValue("permissionId", permission.getId());
       }
    }
 
@@ -133,26 +118,6 @@ public class CustomAppContainerTableCustomizer implements TableCustomizerInterfa
       new DeleteAction().execute(new DeleteInput(Permission.TABLE_NAME).withPrimaryKeys(permissionIds));
 
       return TableCustomizerInterface.super.postDelete(deleteInput, records);
-   }
-
-
-
-   /***************************************************************************
-    **
-    ***************************************************************************/
-   public Permission buildPermission(CustomAppContainer container) throws QException
-   {
-      String appName = CustomAppsUtils.getCamelCaseName(container.getName(), CustomAppContainer.TABLE_NAME);
-
-      ////////////////////////////////////////////
-      // insert a permission for this container //
-      ////////////////////////////////////////////
-      return (new Permission()
-         .withId(container.getPermissionId())
-         .withName(appName + ".hasAccess")
-         .withDescription("Permission to access " + container.getName())
-         .withObjectType(PermissionObjectType.APP.getId())
-         .withObjectLabel(container.getName()));
    }
 
 }
