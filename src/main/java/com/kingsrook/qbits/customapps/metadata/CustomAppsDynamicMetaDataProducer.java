@@ -287,6 +287,7 @@ public class CustomAppsDynamicMetaDataProducer
 
       QWidgetMetaData lookerWidget = new QWidgetMetaData()
          .withName(widgetName)
+         .withPermissionRules(qInstance.getDefaultPermissionRules().withLevel(PermissionLevel.HAS_ACCESS_PERMISSION).withPermissionBaseName(widgetName + ".hasAccess").withDenyBehavior(DenyBehavior.HIDDEN))
          .withType(WidgetType.CUSTOM_COMPONENT.getType())
          .withCodeReference(new QCodeReference(LookerWidgetRenderer.class))
          .withGridColumns(12)

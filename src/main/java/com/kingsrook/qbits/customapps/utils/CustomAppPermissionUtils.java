@@ -22,6 +22,7 @@
 package com.kingsrook.qbits.customapps.utils;
 
 
+import java.util.Map;
 import com.kingsrook.qbits.userrolepermissions.model.Permission;
 import com.kingsrook.qbits.userrolepermissions.model.PermissionObjectType;
 import com.kingsrook.qqq.backend.core.actions.tables.GetAction;
@@ -50,7 +51,7 @@ public class CustomAppPermissionUtils
       /////////////////////////////////////
       // if permission exists, return it //
       /////////////////////////////////////
-      GetOutput output = new GetAction().execute(new GetInput(Permission.TABLE_NAME).withPrimaryKey(permissionName));
+      GetOutput output = new GetAction().execute(new GetInput(Permission.TABLE_NAME).withUniqueKey(Map.of("name", permissionName)));
       if(output.getRecord() != null)
       {
          return (new Permission(output.getRecord()));
