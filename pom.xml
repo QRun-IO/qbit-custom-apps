@@ -33,7 +33,7 @@
    <parent>
       <groupId>com.kingsrook</groupId>
       <artifactId>qbit-build-parent</artifactId>
-      <version>1.4.0</version>
+      <version>1.5.1</version>
    </parent>
 
    <groupId>com.kingsrook.qbits</groupId>
@@ -82,11 +82,23 @@
    </scm>
 
 
+   <dependencyManagement>
+      <dependencies>
+         <dependency>
+            <groupId>com.kingsrook.qqq</groupId>
+            <artifactId>qqq-bom-pom</artifactId>
+            <version>0.40.0</version>
+            <type>pom</type>
+            <scope>import</scope>
+         </dependency>
+      </dependencies>
+   </dependencyManagement>
+
    <dependencies>
       <dependency>
          <groupId>com.kingsrook.qqq</groupId>
          <artifactId>qqq-backend-core</artifactId>
-         <version>0.40.0-custom-apps-qbit-a8315bc5-20260206.224214-1</version>
+         <version>0.40.0</version>
       </dependency>
       <dependency>
          <groupId>com.kingsrook.qbits</groupId>
@@ -106,7 +118,7 @@
       <dependency>
          <groupId>com.kingsrook.qqq</groupId>
          <artifactId>qqq-frontend-material-dashboard</artifactId>
-         <version>0.40.0-custom-apps-qbit-f0df995-20260206.202533-1</version>
+         <version>0.40.0</version>
       </dependency>
 
       <dependency>
