@@ -28,6 +28,10 @@
       <maven.compiler.target>21</maven.compiler.target>
       <maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
       <maven.compiler.showWarnings>true</maven.compiler.showWarnings>
+      <!-- jacoco sets argLine; the empty default keeps the UTC surefire argLine below valid when jacoco is not active -->
+      <argLine></argLine>
+      <!-- qbit-user-role-permissions built for the QQQ 4.1 family: 0.33.0-RC.1, read back from the canonical registry and on Maven Central (flattened POM, QQQ 4.1.0-RC.21). -->
+      <urp.version>0.33.0-RC.1</urp.version>
    </properties>
 
    <parent>
@@ -56,6 +60,16 @@
    <modelVersion>4.0.0</modelVersion>
 
    <build>
+      <plugins>
+         <plugin>
+            <!-- PostgreSQL instants (CustomAppsPostgresTest) are only correct under a UTC JVM -->
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+               <argLine>@{argLine} -Duser.timezone=UTC</argLine>
+            </configuration>
+         </plugin>
+      </plugins>
       <resources>
          <resource>
             <directory>src/main/resources</directory>
@@ -87,7 +101,9 @@
          <dependency>
             <groupId>com.kingsrook.qqq</groupId>
             <artifactId>qqq-bom-pom</artifactId>
-            <version>0.40.0</version>
+            <!-- The LOCAL_WIDGET backend, per-session metadata customizer and restricted-permission code need the QQQ 4.1 family: the published core
+                 (Central JAR/POM), the one BOM version shared by the four app-QBit patches. -->
+            <version>4.1.0-RC.21</version>
             <type>pom</type>
             <scope>import</scope>
          </dependency>
@@ -98,12 +114,17 @@
       <dependency>
          <groupId>com.kingsrook.qqq</groupId>
          <artifactId>qqq-backend-core</artifactId>
-         <version>0.40.0</version>
       </dependency>
       <dependency>
          <groupId>com.kingsrook.qbits</groupId>
          <artifactId>qbit-user-role-permissions</artifactId>
-         <version>0.31.0</version>
+         <version>${urp.version}</version>
+         <exclusions>
+            <exclusion>
+               <groupId>com.kingsrook.qqq</groupId>
+               <artifactId>qqq-backend-core</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
       <dependency>
          <groupId>com.kingsrook.qqq</groupId>
@@ -115,11 +136,6 @@
          <artifactId>qqq-backend-module-rdbms</artifactId>
          <scope>test</scope>
       </dependency>
-      <dependency>
-         <groupId>com.kingsrook.qqq</groupId>
-         <artifactId>qqq-frontend-material-dashboard</artifactId>
-         <version>0.40.0</version>
-      </dependency>
 
       <dependency>
          <groupId>org.junit.jupiter</groupId>
@@ -129,7 +145,24 @@
       <dependency>
          <groupId>org.assertj</groupId>
          <artifactId>assertj-core</artifactId>
-         <version>3.27.3</version>
+         <version>3.27.7</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>com.kingsrook.qqq</groupId>
+         <artifactId>qqq-backend-module-postgres</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>com.h2database</groupId>
+         <artifactId>h2</artifactId>
+         <version>2.2.220</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.testcontainers</groupId>
+         <artifactId>testcontainers</artifactId>
+         <version>2.0.3</version>
          <scope>test</scope>
       </dependency>
       <dependency>

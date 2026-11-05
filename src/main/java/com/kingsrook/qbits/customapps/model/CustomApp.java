@@ -77,7 +77,7 @@ public class CustomApp extends QRecordEntity implements Serializable
             .withRecordLabelFormat("%s")
             .withRecordLabelFields("name")
             .withSection(SectionFactory.defaultT1("id"))
-            .withSection(SectionFactory.defaultT2("name", "customAppIconId", "customAppBackendConfigId", "customAppSectionId", "sequenceNo", "lookerDashboardId", "permissionId"))
+            .withSection(SectionFactory.defaultT2("name", "customAppIconId", "customAppBackendConfigId", "customAppSectionId", "sequenceNo", "lookerDashboardId", "widgetName", "permissionId"))
             .withSection(new QFieldSection("users", new QIcon().withName("person"), Tier.T2).withWidgetName("customAppPermissions"))
             .withSection(SectionFactory.defaultT3("createDate", "modifyDate"))
 
@@ -115,8 +115,11 @@ public class CustomApp extends QRecordEntity implements Serializable
    @QField(isEditable = false, possibleValueSourceName = Permission.TABLE_NAME)
    private Integer permissionId;
 
-   @QField(isRequired = true)
+   @QField(label = "Looker Dashboard Id")
    private Integer lookerDashboardId;
+
+   @QField(label = "Local Widget", maxLength = 100, valueTooLongBehavior = ValueTooLongBehavior.ERROR)
+   private String widgetName;
 
    @QField(isEditable = false)
    private Instant createDate;
@@ -450,6 +453,37 @@ public class CustomApp extends QRecordEntity implements Serializable
    public CustomApp withPermissionId(Integer permissionId)
    {
       this.permissionId = permissionId;
+      return (this);
+   }
+
+
+
+   /*******************************************************************************
+    ** Getter for widgetName
+    *******************************************************************************/
+   public String getWidgetName()
+   {
+      return (this.widgetName);
+   }
+
+
+
+   /*******************************************************************************
+    ** Setter for widgetName
+    *******************************************************************************/
+   public void setWidgetName(String widgetName)
+   {
+      this.widgetName = widgetName;
+   }
+
+
+
+   /*******************************************************************************
+    ** Fluent setter for widgetName
+    *******************************************************************************/
+   public CustomApp withWidgetName(String widgetName)
+   {
+      this.widgetName = widgetName;
       return (this);
    }
 

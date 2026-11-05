@@ -44,6 +44,10 @@ public class CustomAppsQBitConfig implements QBitConfig
    private boolean includeApiVersions = false;
    private String  componentSourceUrl;
 
+   private String backendName;
+
+   private java.util.Set<String> allowedComponentHosts = new java.util.LinkedHashSet<>();
+
 
 
    /*******************************************************************************
@@ -63,6 +67,7 @@ public class CustomAppsQBitConfig implements QBitConfig
    @Override
    public void validate(QInstance qInstance, List<String> errors)
    {
+      assertCondition(backendName != null && !backendName.isBlank(), "backendName is required for the Custom Apps QBit", errors);
       if(includeApiVersions && !apiMiddlewareModuleAvailable)
       {
          errors.add("Custom Apps QBit is configured to includeApiVersions, but the qqq-middleware-api module is available.");
@@ -170,6 +175,61 @@ public class CustomAppsQBitConfig implements QBitConfig
    public CustomAppsQBitConfig withComponentSourceUrl(String componentSourceUrl)
    {
       this.componentSourceUrl = componentSourceUrl;
+      return (this);
+   }
+
+
+
+   /*******************************************************************************
+    ** The backend the qbit's tables live on.
+    *******************************************************************************/
+   @Override
+   public String getDefaultBackendNameForTables()
+   {
+      return (backendName);
+   }
+
+
+
+   /*******************************************************************************
+    ** Getter for backendName
+    *******************************************************************************/
+   public String getBackendName()
+   {
+      return (this.backendName);
+   }
+
+
+
+   /*******************************************************************************
+    ** Fluent setter for backendName
+    *******************************************************************************/
+   public CustomAppsQBitConfig withBackendName(String backendName)
+   {
+      this.backendName = backendName;
+      return (this);
+   }
+
+
+
+   /*******************************************************************************
+    ** Getter for allowedComponentHosts (lower-case host names an https component
+    ** bundle may be loaded from; empty means paths on this application only)
+    *******************************************************************************/
+   public java.util.Set<String> getAllowedComponentHosts()
+   {
+      return (this.allowedComponentHosts);
+   }
+
+
+
+   /*******************************************************************************
+    ** Fluent setter for allowedComponentHosts
+    *******************************************************************************/
+   public CustomAppsQBitConfig withAllowedComponentHosts(java.util.Collection<String> hosts)
+   {
+      this.allowedComponentHosts = new java.util.LinkedHashSet<>();
+      hosts.forEach(host -> this.allowedComponentHosts.add(host.toLowerCase()));
       return (this);
    }
 

@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import com.kingsrook.qbits.customapps.CustomAppsQBitConfig;
 import com.kingsrook.qbits.customapps.model.CustomApp;
 import com.kingsrook.qbits.customapps.model.CustomAppBackendConfig;
 import com.kingsrook.qbits.customapps.model.CustomAppBackendEnum;
@@ -38,6 +39,8 @@ import com.kingsrook.qbits.customapps.utils.CustomAppsUtils;
 import com.kingsrook.qbits.customapps.widgets.LookerWidgetRenderer;
 import com.kingsrook.qqq.backend.core.actions.tables.QueryAction;
 import com.kingsrook.qqq.backend.core.context.QContext;
+import com.kingsrook.qqq.backend.core.model.session.QSession;
+import com.kingsrook.qqq.backend.core.model.session.QSystemUserSession;
 import com.kingsrook.qqq.backend.core.exceptions.QException;
 import com.kingsrook.qqq.backend.core.instances.QMetaDataVariableInterpreter;
 import com.kingsrook.qqq.backend.core.logging.QLogger;
@@ -76,6 +79,42 @@ public class CustomAppsDynamicMetaDataProducer
     *
     ***************************************************************************/
    public CustomAppData getCustomAppList(QInstance qInstance) throws QException
+   {
+      ////////////////////////////////////////////////////////////////////////////////
+      // capture the viewer now: the build itself runs with the system session set //
+      ////////////////////////////////////////////////////////////////////////////////
+      QSession viewer = QContext.getQSession();
+      return (getCustomAppList(qInstance, name -> viewer != null && viewer.hasPermission(name + ".hasAccess")));
+   }
+
+
+
+   /***************************************************************************
+    ** Build the apps for whoever the predicate admits (by app/container name).
+    ** The definition rows are read as the system user (they are configuration,
+    ** not data of the viewer); what the viewer may see is decided only by the
+    ** predicate, which the metadata customizer ties to the session's permissions.
+    ***************************************************************************/
+   public CustomAppData getCustomAppList(QInstance qInstance, java.util.function.Predicate<String> permitted) throws QException
+   {
+      QSession original = QContext.getQSession();
+      try
+      {
+         QContext.setQSession(new QSystemUserSession());
+         return (buildCustomAppList(qInstance, permitted, original));
+      }
+      finally
+      {
+         QContext.setQSession(original);
+      }
+   }
+
+
+
+   /***************************************************************************
+    ** The build proper, with the system session in place for reads.
+    ***************************************************************************/
+   private CustomAppData buildCustomAppList(QInstance qInstance, java.util.function.Predicate<String> permitted, QSession viewer) throws QException
    {
       ///////////////////////////////////////////////////
       // look up data needed to set up the custom apps //
@@ -152,7 +191,7 @@ public class CustomAppsDynamicMetaDataProducer
                   /////////////////////////////////////////////////////
                   // make sure user has permission to this app //
                   ////////////////////////////////////////////////////
-                  if(!QContext.getQSession().hasPermission(appName + ".hasAccess"))
+                  if(!permitted.test(appName))
                   {
                      continue;
                   }
@@ -161,8 +200,21 @@ public class CustomAppsDynamicMetaDataProducer
                   // create a custom widget for this app //
                   /////////////////////////////////////////
                   String                   widgetName = appName + "Widget";
-                  QWidgetMetaDataInterface widget     = buildWidget(qInstance, app, customAppBackendConfigMap, widgetName);
-                  CustomAppIcon            appIcon    = customAppIconMap.get(app.getCustomAppIconId());
+                  QWidgetMetaDataInterface widget;
+                  try
+                  {
+                     widget = buildWidget(qInstance, app, customAppBackendConfigMap, widgetName);
+                  }
+                  catch(IllegalArgumentException e)
+                  {
+                     ///////////////////////////////////////////////////////////////////////
+                     // one invalid row must not take the other apps (or startup) with it; //
+                     // it is simply not offered                                           //
+                     ///////////////////////////////////////////////////////////////////////
+                     LOG.warn("Custom app skipped: its definition is not valid", logPair("app", app.getName()), logPair("reason", e.getMessage()));
+                     continue;
+                  }
+                  CustomAppIcon appIcon = customAppIconMap.get(app.getCustomAppIconId());
 
                   QAppMetaData appMetaData = new QAppMetaData()
                      .withPermissionRules(qInstance.getDefaultPermissionRules().withLevel(PermissionLevel.HAS_ACCESS_PERMISSION).withPermissionBaseName(appName).withDenyBehavior(DenyBehavior.HIDDEN))
@@ -217,7 +269,7 @@ public class CustomAppsDynamicMetaDataProducer
          /////////////////////////////////////////////////////
          // make sure user has permission to this container //
          /////////////////////////////////////////////////////
-         if(!QContext.getQSession().hasPermission(containerName + ".hasAccess"))
+         if(!permitted.test(containerName))
          {
             continue;
          }
@@ -248,10 +300,40 @@ public class CustomAppsDynamicMetaDataProducer
       {
          case LOOKER:
             return (buildLookerWidget(qInstance, customApp, widgetName));
+         case LOCAL_WIDGET:
+            return (localWidget(qInstance, customApp));
          default:
             throw new IllegalArgumentException("Unknown custom app backend: " + customAppBackendConfig.getCustomAppBackendId());
       }
 
+   }
+
+
+
+   /*******************************************************************************
+    ** a custom app that shows a widget the application itself defines (a record
+    ** list, a chart, ...): the screen is composed from existing, permissioned
+    ** metadata, so no code or markup comes from the data, and the widget keeps its
+    ** own permission rules.  Only widgets that exist on the instance can be named,
+    ** and never this qbit's own generated ones.
+    *******************************************************************************/
+   private QWidgetMetaDataInterface localWidget(QInstance qInstance, CustomApp customApp)
+   {
+      String name = customApp.getWidgetName();
+      if(!StringUtils.hasContent(name))
+      {
+         throw new IllegalArgumentException("a local widget app needs a widget name");
+      }
+      QWidgetMetaDataInterface widget = qInstance.getWidget(name);
+      if(widget == null)
+      {
+         throw new IllegalArgumentException("widget " + name + " is not defined on this application");
+      }
+      if(name.startsWith("qca"))
+      {
+         throw new IllegalArgumentException("widget " + name + " is generated by custom apps and cannot be chosen");
+      }
+      return (widget);
    }
 
 
@@ -271,10 +353,19 @@ public class CustomAppsDynamicMetaDataProducer
          componentSourceUrl = "/dynamic-qfmd-components/q-embed-looker-dashboards.bundle.js";
       }
 
+      if(!isAllowedComponentSource(componentSourceUrl))
+      {
+         throw new IllegalArgumentException("the component source must be a path on this application (or an https address the configuration allows)");
+      }
+
       //////////////////////////////
       // add the dashboard to url //
       /////////////////////////
       Integer dashboardId = customApp.getLookerDashboardId();
+      if(dashboardId == null)
+      {
+         throw new IllegalArgumentException("a Looker app needs a dashboard id");
+      }
       componentSourceUrl += "?dashboardId=" + dashboardId;
 
       Map<String, Serializable> defaultValues = MapBuilder.of(
@@ -287,7 +378,7 @@ public class CustomAppsDynamicMetaDataProducer
 
       QWidgetMetaData lookerWidget = new QWidgetMetaData()
          .withName(widgetName)
-         .withPermissionRules(qInstance.getDefaultPermissionRules().withLevel(PermissionLevel.HAS_ACCESS_PERMISSION).withPermissionBaseName(widgetName + ".hasAccess").withDenyBehavior(DenyBehavior.HIDDEN))
+         .withPermissionRules(qInstance.getDefaultPermissionRules().withLevel(PermissionLevel.HAS_ACCESS_PERMISSION).withPermissionBaseName(customApp.getName() == null ? widgetName : CustomAppsUtils.getCamelCaseName(customApp.getName(), CustomApp.TABLE_NAME)).withDenyBehavior(DenyBehavior.HIDDEN))
          .withType(WidgetType.CUSTOM_COMPONENT.getType())
          .withCodeReference(new QCodeReference(LookerWidgetRenderer.class))
          .withGridColumns(12)
@@ -300,6 +391,52 @@ public class CustomAppsDynamicMetaDataProducer
       }
 
       return (lookerWidget);
+   }
+
+
+
+   /*******************************************************************************
+    ** The component bundle is code the browser runs, so its source is never taken
+    ** from data: a path served by this application, or an https address whose host
+    ** the configuration lists.  Anything else (script or data URLs, protocol
+    ** relative addresses, other hosts) is refused.
+    *******************************************************************************/
+   public boolean isAllowedComponentSource(String url)
+   {
+      if(url == null || url.chars().anyMatch(c -> c < 0x21 || c > 0x7e))
+      {
+         return (false);
+      }
+      if(url.startsWith("/") && !url.startsWith("//") && !url.contains("\\") && !url.contains(".."))
+      {
+         return (true);
+      }
+      try
+      {
+         java.net.URI uri = new java.net.URI(url);
+         CustomAppsQBitConfig config = configFor(QContext.getQInstance());
+         return ("https".equals(uri.getScheme()) && uri.getUserInfo() == null && uri.getHost() != null
+            && config != null && config.getAllowedComponentHosts().contains(uri.getHost().toLowerCase()));
+      }
+      catch(java.net.URISyntaxException e)
+      {
+         return (false);
+      }
+   }
+
+
+
+   /*******************************************************************************
+    ** The qbit's configuration on the instance, if installed.
+    *******************************************************************************/
+   static CustomAppsQBitConfig configFor(QInstance qInstance)
+   {
+      if(qInstance == null || qInstance.getQBits() == null)
+      {
+         return (null);
+      }
+      return (qInstance.getQBits().values().stream().map(qBit -> qBit.getConfig()).filter(CustomAppsQBitConfig.class::isInstance)
+         .map(CustomAppsQBitConfig.class::cast).findFirst().orElse(null));
    }
 
 

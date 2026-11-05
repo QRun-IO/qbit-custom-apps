@@ -33,7 +33,8 @@ import com.kingsrook.qqq.backend.core.model.metadata.producers.annotations.QMeta
 public enum CustomAppBackendEnum implements PossibleValueEnum<Integer>
 {
    LOOKER(1, "Looker"),
-   URL(2, "URL");
+   URL(2, "URL"),
+   LOCAL_WIDGET(3, "Local widget");
 
    private final Integer id;
    private final String  label;
