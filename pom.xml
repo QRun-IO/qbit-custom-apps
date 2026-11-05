@@ -96,6 +96,22 @@
    </scm>
 
 
+   <repositories>
+      <!-- Canonical Maven Central as a fallback behind the CI's Google-hosted Central mirror (mirrorOf central only): a release published to
+           Central minutes ago can be absent from that mirror (404) and Maven never fails over between mirrors. A distinct id is not mirrored,
+           so it is tried when central misses. Same id and URL as the platform's own fallback profile; releases only, https, no credentials. -->
+      <repository>
+         <id>canonical-maven-central</id>
+         <url>https://repo.maven.apache.org/maven2/</url>
+         <releases>
+            <enabled>true</enabled>
+         </releases>
+         <snapshots>
+            <enabled>false</enabled>
+         </snapshots>
+      </repository>
+   </repositories>
+
    <dependencyManagement>
       <dependencies>
          <dependency>
